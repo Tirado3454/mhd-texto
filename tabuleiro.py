@@ -1,48 +1,48 @@
 import streamlit as st
-import chess
-import chess.svg
 
-# Configuração inicial da interface
-st.set_page_config(page_title="Editor de Tabuleiro de Xadrez", layout="centered")
-st.markdown(
-    """
-    <h1 style='font-size:32px; display: flex; align-items: center;'>
-    <img src='data:image/png;base64,<insira_o_base64_gerado_da_logo_aqui>' style='height:50px; margin-right:10px;'> Editor de Tabuleiro de Xadrez
-    </h1>
-    """,
-    unsafe_allow_html=True
-)
-st.write("Configure e visualize posições personalizadas no tabuleiro de xadrez.")
+def text_section():
+    # Inicialização do estado da sessão
+    if 'etapas' not in st.session_state:
+        st.session_state['etapas'] = []
+    if 'descricao_etapa' not in st.session_state:
+        st.session_state['descricao_etapa'] = ""
 
-# Inicialização do tabuleiro
-if "current_board" not in st.session_state:
-    st.session_state.current_board = chess.Board()
+    # Função para obter a dica com base no tópico selecionado
+    def obter_dica(topico):
+        dicas = {
+            "Teórica": "Explique a fundamentação teórica relacionada ao problema.",
+            "Hipótese": "Formule a hipótese com base na análise teórica.",
+            "Planejamento": "Descreva como o problema será resolvido.",
+            "Execução": "Mostre os resultados da implementação.",
+            "Avaliação": "Analise os resultados obtidos em relação ao esperado.",
+        }
+        return dicas.get(topico, "Selecione um tópico para visualizar a dica.")
 
-# Função para renderizar o tabuleiro com estilo customizado
-def render_tabuleiro_customizado(board):
-    return chess.svg.board(
-        board=board, 
-        size=320,  # Reduzindo o tamanho do tabuleiro
-        style="""
-            .square.light { fill: #ffffff; }  /* Casas claras em branco */
-            .square.dark { fill: #8FBC8F; }  /* Casas escuras em verde */
-        """
-    )
+    # Layout para os tópicos do MHD
+    st.subheader("Selecione o tópico da etapa:")
+    topico = st.selectbox("", ["Selecione", "Teórica", "Hipótese", "Planejamento", "Execução", "Avaliação"])
 
-# Configuração do tabuleiro com FEN
-st.markdown("### Configuração do Tabuleiro")
-fen_input = st.text_input(
-    "Insira a notação FEN para configurar o tabuleiro:", 
-    value=st.session_state.current_board.fen()
-)
+    # Exibe a dica correspondente
+    if topico != "Selecione":
+        st.info(obter_dica(topico))
 
-if st.button("Atualizar Tabuleiro com FEN"):
-    try:
-        st.session_state.current_board.set_fen(fen_input)
-        st.success("Tabuleiro atualizado com sucesso!")
-    except ValueError:
-        st.error("Notação FEN inválida. Por favor, insira uma notação correta.")
+    # Campo de descrição para adicionar etapas
+    st.subheader("Descreva a etapa:")
+    descricao = st.text_area("", key="descricao_etapa")
 
-# Visualizar tabuleiro configurado
-st.markdown("### Tabuleiro Atual")
-st.image(render_tabuleiro_customizado(st.session_state.current_board), use_container_width=True)
+    # Botão para adicionar nova etapa
+    if st.button("Adicionar Etapa"):
+        if descricao:
+            st.session_state['etapas'].append({"topico": topico, "descricao": descricao})
+            st.session_state['descricao_etapa'] = ""  # Limpa o campo de descrição
+            st.success("Etapa adicionada com sucesso!")
+        else:
+            st.warning("Por favor, insira uma descrição para a etapa.")
+
+    # Exibe as etapas adicionadas
+    st.subheader("Etapas Adicionadas:")
+    if st.session_state['etapas']:
+        for i, etapa in enumerate(st.session_state['etapas'], 1):
+            st.write(f"**Etapa {i}:** {etapa['topico']} - {etapa['descricao']}")
+    else:
+        st.write("Nenhuma etapa adicionada até agora.")
