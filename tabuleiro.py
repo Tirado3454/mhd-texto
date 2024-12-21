@@ -1,72 +1,69 @@
 import streamlit as st
-import chess
-import chess.svg
-from cairosvg import svg2png
 
-def render_chessboard(board):
-    """Renderiza o tabuleiro de xadrez em formato PNG para exibição no Streamlit."""
-    svg = chess.svg.board(board=board)
-    png = svg2png(bytestring=svg)
-    return png
+# Inicializar o tabuleiro como uma matriz 8x8
+def inicializar_tabuleiro():
+    return [["" for _ in range(8)] for _ in range(8)]
 
+# Renderizar o tabuleiro no Streamlit
+def renderizar_tabuleiro(tabuleiro):
+    st.write("Tabuleiro de Xadrez")
+    for linha in tabuleiro:
+        st.write(" | ".join(celula if celula else "." for celula in linha))
+
+# Atualizar uma posição no tabuleiro
+def atualizar_tabuleiro(tabuleiro, posicao, peca):
+    try:
+        coluna, linha = posicao[0].lower(), int(posicao[1])
+        col_idx = ord(coluna) - ord('a')
+        row_idx = 8 - linha
+        if 0 <= col_idx < 8 and 0 <= row_idx < 8:
+            tabuleiro[row_idx][col_idx] = peca
+            return True
+        else:
+            return False
+    except (IndexError, ValueError):
+        return False
+
+# Remover uma peça do tabuleiro
+def remover_peca(tabuleiro, posicao):
+    atualizar_tabuleiro(tabuleiro, posicao, "")
+
+# Interface principal
 def main():
     st.title("Editor de Tabuleiro de Xadrez")
+    if "tabuleiro" not in st.session_state:
+        st.session_state.tabuleiro = inicializar_tabuleiro()
 
-    # Inicializando o tabuleiro
-    if "chessboard" not in st.session_state:
-        st.session_state.chessboard = chess.Board()
+    tabuleiro = st.session_state.tabuleiro
 
-    board = st.session_state.chessboard
+    # Renderizar o tabuleiro
+    renderizar_tabuleiro(tabuleiro)
 
-    # Renderiza o tabuleiro
-    st.image(render_chessboard(board), use_column_width=True)
+    # Controles para adicionar peças
+    st.subheader("Adicionar peça")
+    peca = st.text_input("Digite a peça (ex: 'P', 'T', 'C', etc.):")
+    posicao = st.text_input("Digite a posição (ex: 'e2'):")
 
-    # Controle para escolher a ação
-    col1, col2 = st.columns(2)
+    if st.button("Adicionar"):
+        if atualizar_tabuleiro(tabuleiro, posicao, peca):
+            st.success(f"Peça '{peca}' adicionada na posição {posicao}.")
+        else:
+            st.error("Posição inválida.")
 
-    with col1:
-        st.write("Escolha uma peça para adicionar:")
-        piece = st.selectbox("Peça", ["Peão", "Cavalo", "Bispo", "Torre", "Rainha", "Rei"])
-        color = st.radio("Cor", ["Branca", "Preta"])
-        position = st.text_input("Posição no tabuleiro (ex: e2):")
+    # Controles para remover peças
+    st.subheader("Remover peça")
+    posicao_remover = st.text_input("Digite a posição para remover (ex: 'e2'):")
 
-    with col2:
-        st.write("Remova uma peça:")
-        remove_position = st.text_input("Posição para remover (ex: e2):")
-
-    # Adicionar peça ao tabuleiro
-    if st.button("Adicionar peça"):
-        if position:
-            try:
-                square = chess.parse_square(position)
-                piece_map = {
-                    "Peão": chess.PAWN,
-                    "Cavalo": chess.KNIGHT,
-                    "Bispo": chess.BISHOP,
-                    "Torre": chess.ROOK,
-                    "Rainha": chess.QUEEN,
-                    "Rei": chess.KING,
-                }
-                piece_color = chess.WHITE if color == "Branca" else chess.BLACK
-                board.set_piece_at(square, chess.Piece(piece_map[piece], piece_color))
-                st.success(f"{piece} {color} adicionado na posição {position}.")
-            except ValueError:
-                st.error("Posição inválida.")
-
-    # Remover peça do tabuleiro
-    if st.button("Remover peça"):
-        if remove_position:
-            try:
-                square = chess.parse_square(remove_position)
-                board.remove_piece_at(square)
-                st.success(f"Peça removida da posição {remove_position}.")
-            except ValueError:
-                st.error("Posição inválida.")
+    if st.button("Remover"):
+        if atualizar_tabuleiro(tabuleiro, posicao_remover, ""):
+            st.success(f"Peça removida da posição {posicao_remover}.")
+        else:
+            st.error("Posição inválida.")
 
     # Botão para resetar o tabuleiro
     if st.button("Resetar tabuleiro"):
-        board.reset()
-        st.success("Tabuleiro resetado para a posição inicial.")
+        st.session_state.tabuleiro = inicializar_tabuleiro()
+        st.success("Tabuleiro resetado.")
 
 if __name__ == "__main__":
     main()
