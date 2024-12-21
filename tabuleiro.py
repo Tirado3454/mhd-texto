@@ -1,48 +1,39 @@
 import streamlit as st
+import chess
+import chess.svg
 
-def text_section():
-    # Inicialização do estado da sessão
-    if 'etapas' not in st.session_state:
-        st.session_state['etapas'] = []
-    if 'descricao_etapa' not in st.session_state:
-        st.session_state['descricao_etapa'] = ""
+# T�tulo da p�gina
+st.title("Editor de Tabuleiro de Xadrez")
 
-    # Função para obter a dica com base no tópico selecionado
-    def obter_dica(topico):
-        dicas = {
-            "Teórica": "Explique a fundamentação teórica relacionada ao problema.",
-            "Hipótese": "Formule a hipótese com base na análise teórica.",
-            "Planejamento": "Descreva como o problema será resolvido.",
-            "Execução": "Mostre os resultados da implementação.",
-            "Avaliação": "Analise os resultados obtidos em relação ao esperado.",
-        }
-        return dicas.get(topico, "Selecione um tópico para visualizar a dica.")
+# Fun��o para exibir o tabuleiro
+def exibir_tabuleiro(fen=""):
+    board = chess.Board(fen) if fen else chess.Board()
+    svg = chess.svg.board(board)
+    st.image(svg, use_column_width=True)
 
-    # Layout para os tópicos do MHD
-    st.subheader("Selecione o tópico da etapa:")
-    topico = st.selectbox("", ["Selecione", "Teórica", "Hipótese", "Planejamento", "Execução", "Avaliação"])
+# Configura��o inicial
+if "fen" not in st.session_state:
+    st.session_state.fen = ""
 
-    # Exibe a dica correspondente
-    if topico != "Selecione":
-        st.info(obter_dica(topico))
+# Entrada FEN
+st.subheader("Configura��o do Tabuleiro")
+st.session_state.fen = st.text_input("Insira a FEN do tabuleiro:", st.session_state.fen)
 
-    # Campo de descrição para adicionar etapas
-    st.subheader("Descreva a etapa:")
-    descricao = st.text_area("", key="descricao_etapa")
+# Bot�o para atualizar o tabuleiro
+if st.button("Atualizar Tabuleiro com FEN"):
+    try:
+        exibir_tabuleiro(st.session_state.fen)
+    except ValueError:
+        st.error("FEN inv�lida. Por favor, insira uma FEN v�lida.")
 
-    # Botão para adicionar nova etapa
-    if st.button("Adicionar Etapa"):
-        if descricao:
-            st.session_state['etapas'].append({"topico": topico, "descricao": descricao})
-            st.session_state['descricao_etapa'] = ""  # Limpa o campo de descrição
-            st.success("Etapa adicionada com sucesso!")
-        else:
-            st.warning("Por favor, insira uma descrição para a etapa.")
+# Bot�o para resetar o tabuleiro
+if st.button("Resetar para a posi��o inicial"):
+    st.session_state.fen = ""
+    exibir_tabuleiro()
 
-    # Exibe as etapas adicionadas
-    st.subheader("Etapas Adicionadas:")
-    if st.session_state['etapas']:
-        for i, etapa in enumerate(st.session_state['etapas'], 1):
-            st.write(f"**Etapa {i}:** {etapa['topico']} - {etapa['descricao']}")
-    else:
-        st.write("Nenhuma etapa adicionada até agora.")
+# Exibi��o do tabuleiro atual
+st.subheader("Tabuleiro Atual")
+if st.session_state.fen:
+    exibir_tabuleiro(st.session_state.fen)
+else:
+    exibir_tabuleiro()
