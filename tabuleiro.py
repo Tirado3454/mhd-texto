@@ -2,35 +2,40 @@ import streamlit as st
 import chess
 import chess.svg
 
-def main():
-    st.title("Editor de Tabuleiro de Xadrez")
+# Configuração inicial da interface
+st.set_page_config(page_title="Editor de Tabuleiro de Xadrez", layout="centered")
+st.title("Editor de Tabuleiro de Xadrez")
+st.write("Configure e visualize o tabuleiro de xadrez.")
 
-    # Inicializar o tabuleiro no estado inicial, se não estiver configurado
-    if "tabuleiro" not in st.session_state:
-        st.session_state.tabuleiro = chess.Board()
+# Inicialização do tabuleiro
+if "current_board" not in st.session_state:
+    st.session_state.current_board = chess.Board()
 
-    tabuleiro = st.session_state.tabuleiro
+# Função para renderizar o tabuleiro com estilo customizado
+def render_tabuleiro_customizado(board):
+    return chess.svg.board(
+        board=board, 
+        size=320,  # Tamanho do tabuleiro
+        style="""
+            .square.light { fill: #ffffff; }  /* Casas claras em branco */
+            .square.dark { fill: #8FBC8F; }  /* Casas escuras em verde */
+        """
+    )
 
-    # Renderizar o tabuleiro usando chess.svg
-    st.subheader("Tabuleiro Atual")
-    tabuleiro_svg = chess.svg.board(tabuleiro)
-    st.write(f"<div style='text-align: center;'>{tabuleiro_svg}</div>", unsafe_allow_html=True)
+# Configuração do tabuleiro com FEN
+st.markdown("### Configuração do Tabuleiro")
+fen_input = st.text_input(
+    "Insira a notação FEN para configurar o tabuleiro:", 
+    value=st.session_state.current_board.fen()
+)
 
-    # Controles para modificar o tabuleiro
-    st.subheader("Editar Tabuleiro")
-    movimento = st.text_input("Digite o movimento (ex: 'e2e4'):")
+if st.button("Atualizar Tabuleiro com FEN"):
+    try:
+        st.session_state.current_board.set_fen(fen_input)
+        st.success("Tabuleiro atualizado com sucesso!")
+    except ValueError:
+        st.error("Notação FEN inválida. Por favor, insira uma notação correta.")
 
-    if st.button("Mover"):
-        try:
-            tabuleiro.push_san(movimento)
-            st.success(f"Movimento '{movimento}' realizado.")
-        except ValueError:
-            st.error("Movimento inválido. Tente novamente.")
-
-    # Botão para resetar o tabuleiro
-    if st.button("Resetar Tabuleiro"):
-        st.session_state.tabuleiro = chess.Board()
-        st.success("Tabuleiro resetado para o estado inicial.")
-
-if __name__ == "__main__":
-    main()
+# Visualizar tabuleiro configurado
+st.markdown("### Tabuleiro Atual")
+st.image(render_tabuleiro_customizado(st.session_state.current_board), use_container_width=True)
