@@ -1,27 +1,22 @@
 import streamlit as st
 import chess
 import chess.svg
-from cairosvg import svg2png
-
-# Função para renderizar o tabuleiro
-def renderizar_tabuleiro(tabuleiro):
-    svg = chess.svg.board(tabuleiro)
-    png = svg2png(bytestring=svg)
-    return png
 
 def main():
     st.title("Editor de Tabuleiro de Xadrez")
 
-    # Inicializar o tabuleiro
+    # Inicializar o tabuleiro no estado inicial, se não estiver configurado
     if "tabuleiro" not in st.session_state:
         st.session_state.tabuleiro = chess.Board()
 
     tabuleiro = st.session_state.tabuleiro
 
-    # Renderizar o tabuleiro
-    st.image(renderizar_tabuleiro(tabuleiro), caption="Tabuleiro Atual", use_column_width=True)
+    # Renderizar o tabuleiro usando chess.svg
+    st.subheader("Tabuleiro Atual")
+    tabuleiro_svg = chess.svg.board(tabuleiro)
+    st.write(f"<div style='text-align: center;'>{tabuleiro_svg}</div>", unsafe_allow_html=True)
 
-    # Controles para adicionar ou remover peças
+    # Controles para modificar o tabuleiro
     st.subheader("Editar Tabuleiro")
     movimento = st.text_input("Digite o movimento (ex: 'e2e4'):")
 
