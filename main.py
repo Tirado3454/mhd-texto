@@ -23,7 +23,7 @@ st.header("Etapas do Modelo Hipotético-Dedutivo")
 
 # Seção de seleção de tópicos
 st.subheader("Tópicos do MHD")
-topicos_mhd = ["Observação", "Hipótese", "Experimento", "Teoria"]
+topicos_mhd = ["Observação", "Formulação de Hipóteses", "Dedução", "Teste por Experimento", "Análise dos Resultados", "Conclusão"]
 st.session_state.topico_selecionado = st.selectbox(
     "Selecione um tópico do MHD:", topicos_mhd
 )
@@ -31,9 +31,11 @@ st.session_state.topico_selecionado = st.selectbox(
 # Exibir dica com base no tópico selecionado
 dicas = {
     "Observação": "Observe atentamente e registre os detalhes relevantes.",
-    "Hipótese": "Levante hipóteses sobre possíveis padrões ou explicações.",
-    "Experimento": "Teste suas hipóteses de maneira controlada.",
-    "Teoria": "Elabore uma teoria baseada nas observações e experimentos.",
+    "Formulação de Hipóteses": "Levante hipóteses sobre possíveis padrões ou explicações.",
+    "Dedução": "Deduza as consequências lógicas das hipóteses formuladas.",
+    "Teste por Experimento": "Teste suas hipóteses de maneira controlada.",
+    "Análise dos Resultados": "Analise os dados obtidos para validar ou refutar a hipótese.",
+    "Conclusão": "Elabore uma conclusão baseada nas observações e experimentos realizados."
 }
 st.info(dicas[st.session_state.topico_selecionado])
 
